@@ -69,55 +69,55 @@ EOT
     name                  = string
     resource_group_name   = string
     friendly_name         = optional(string)
-    load_balancer_enabled = optional(bool, true)
+    load_balancer_enabled = optional(bool) # Default: true
     tags                  = optional(map(string))
     backend_pool = object({
       backend = list(object({
         address     = string
-        enabled     = optional(bool, true)
+        enabled     = optional(bool) # Default: true
         host_header = string
         http_port   = number
         https_port  = number
-        priority    = optional(number, 1)
-        weight      = optional(number, 50)
+        priority    = optional(number) # Default: 1
+        weight      = optional(number) # Default: 50
       }))
       health_probe_name   = string
       load_balancing_name = string
       name                = string
     })
     backend_pool_health_probe = list(object({
-      enabled             = optional(bool, true)
-      interval_in_seconds = optional(number, 120)
+      enabled             = optional(bool)   # Default: true
+      interval_in_seconds = optional(number) # Default: 120
       name                = string
-      path                = optional(string, "/")
-      probe_method        = optional(string, "GET")
-      protocol            = optional(string, "Http")
+      path                = optional(string) # Default: "/"
+      probe_method        = optional(string) # Default: "GET"
+      protocol            = optional(string) # Default: "Http"
     }))
     backend_pool_load_balancing = list(object({
-      additional_latency_milliseconds = optional(number, 0)
+      additional_latency_milliseconds = optional(number) # Default: 0
       name                            = string
-      sample_size                     = optional(number, 4)
-      successful_samples_required     = optional(number, 2)
+      sample_size                     = optional(number) # Default: 4
+      successful_samples_required     = optional(number) # Default: 2
     }))
     frontend_endpoint = list(object({
       host_name                               = string
       name                                    = string
-      session_affinity_enabled                = optional(bool, false)
-      session_affinity_ttl_seconds            = optional(number, 0)
+      session_affinity_enabled                = optional(bool)   # Default: false
+      session_affinity_ttl_seconds            = optional(number) # Default: 0
       web_application_firewall_policy_link_id = optional(string)
     }))
     routing_rule = list(object({
       accepted_protocols = list(string)
-      enabled            = optional(bool, true)
+      enabled            = optional(bool) # Default: true
       forwarding_configuration = optional(object({
         backend_pool_name                     = string
         cache_duration                        = optional(string)
-        cache_enabled                         = optional(bool, false)
-        cache_query_parameter_strip_directive = optional(string, "StripAll")
+        cache_enabled                         = optional(bool)   # Default: false
+        cache_query_parameter_strip_directive = optional(string) # Default: "StripAll"
         cache_query_parameters                = optional(list(string))
-        cache_use_dynamic_compression         = optional(bool, false)
+        cache_use_dynamic_compression         = optional(bool) # Default: false
         custom_forwarding_path                = optional(string)
-        forwarding_protocol                   = optional(string, "HttpsOnly")
+        forwarding_protocol                   = optional(string) # Default: "HttpsOnly"
       }))
       frontend_endpoints = list(string)
       name               = string
@@ -132,7 +132,7 @@ EOT
       }))
     }))
     backend_pool_settings = optional(object({
-      backend_pools_send_receive_timeout_seconds   = optional(number, 60)
+      backend_pools_send_receive_timeout_seconds   = optional(number) # Default: 60
       enforce_backend_pools_certificate_name_check = bool
     }))
   }))
