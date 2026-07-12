@@ -1,3 +1,7 @@
+output "frontdoors_id" {
+  description = "Map of id values across all frontdoors, keyed the same as var.frontdoors"
+  value       = { for k, v in azurerm_frontdoor.frontdoors : k => v.id }
+}
 output "frontdoors_backend_pool" {
   description = "Map of backend_pool values across all frontdoors, keyed the same as var.frontdoors"
   value       = { for k, v in azurerm_frontdoor.frontdoors : k => v.backend_pool }
