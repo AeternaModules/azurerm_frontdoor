@@ -7,22 +7,25 @@ resource "azurerm_frontdoor" "frontdoors" {
   load_balancer_enabled = each.value.load_balancer_enabled
   tags                  = each.value.tags
 
-  backend_pool {
-    dynamic "backend" {
-      for_each = each.value.backend_pool.backend
-      content {
-        address     = backend.value.address
-        enabled     = backend.value.enabled
-        host_header = backend.value.host_header
-        http_port   = backend.value.http_port
-        https_port  = backend.value.https_port
-        priority    = backend.value.priority
-        weight      = backend.value.weight
+  dynamic "backend_pool" {
+    for_each = each.value.backend_pool
+    content {
+      dynamic "backend" {
+        for_each = backend_pool.value.backend
+        content {
+          address     = backend.value.address
+          enabled     = backend.value.enabled
+          host_header = backend.value.host_header
+          http_port   = backend.value.http_port
+          https_port  = backend.value.https_port
+          priority    = backend.value.priority
+          weight      = backend.value.weight
+        }
       }
+      health_probe_name   = backend_pool.value.health_probe_name
+      load_balancing_name = backend_pool.value.load_balancing_name
+      name                = backend_pool.value.name
     }
-    health_probe_name   = each.value.backend_pool.health_probe_name
-    load_balancing_name = each.value.backend_pool.load_balancing_name
-    name                = each.value.backend_pool.name
   }
 
   dynamic "backend_pool_health_probe" {
@@ -94,7 +97,7 @@ resource "azurerm_frontdoor" "frontdoors" {
   }
 
   dynamic "backend_pool_settings" {
-    for_each = each.value.backend_pool_settings != null ? [each.value.backend_pool_settings] : []
+    for_each = each.value.backend_pool_settings != null ? each.value.backend_pool_settings : []
     content {
       backend_pools_send_receive_timeout_seconds   = backend_pool_settings.value.backend_pools_send_receive_timeout_seconds
       enforce_backend_pools_certificate_name_check = backend_pool_settings.value.enforce_backend_pools_certificate_name_check
