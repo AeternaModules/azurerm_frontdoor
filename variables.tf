@@ -69,55 +69,55 @@ EOT
     name                  = string
     resource_group_name   = string
     friendly_name         = optional(string)
-    load_balancer_enabled = optional(bool) # Default: true
+    load_balancer_enabled = optional(bool)
     tags                  = optional(map(string))
     backend_pool = list(object({
       backend = list(object({
         address     = string
-        enabled     = optional(bool) # Default: true
+        enabled     = optional(bool)
         host_header = string
         http_port   = number
         https_port  = number
-        priority    = optional(number) # Default: 1
-        weight      = optional(number) # Default: 50
+        priority    = optional(number)
+        weight      = optional(number)
       }))
       health_probe_name   = string
       load_balancing_name = string
       name                = string
     }))
     backend_pool_health_probe = list(object({
-      enabled             = optional(bool)   # Default: true
-      interval_in_seconds = optional(number) # Default: 120
+      enabled             = optional(bool)
+      interval_in_seconds = optional(number)
       name                = string
-      path                = optional(string) # Default: "/"
-      probe_method        = optional(string) # Default: "GET"
-      protocol            = optional(string) # Default: "Http"
+      path                = optional(string)
+      probe_method        = optional(string)
+      protocol            = optional(string)
     }))
     backend_pool_load_balancing = list(object({
-      additional_latency_milliseconds = optional(number) # Default: 0
+      additional_latency_milliseconds = optional(number)
       name                            = string
-      sample_size                     = optional(number) # Default: 4
-      successful_samples_required     = optional(number) # Default: 2
+      sample_size                     = optional(number)
+      successful_samples_required     = optional(number)
     }))
     frontend_endpoint = list(object({
       host_name                               = string
       name                                    = string
-      session_affinity_enabled                = optional(bool)   # Default: false
-      session_affinity_ttl_seconds            = optional(number) # Default: 0
+      session_affinity_enabled                = optional(bool)
+      session_affinity_ttl_seconds            = optional(number)
       web_application_firewall_policy_link_id = optional(string)
     }))
     routing_rule = list(object({
       accepted_protocols = list(string)
-      enabled            = optional(bool) # Default: true
+      enabled            = optional(bool)
       forwarding_configuration = optional(object({
         backend_pool_name                     = string
         cache_duration                        = optional(string)
-        cache_enabled                         = optional(bool)   # Default: false
-        cache_query_parameter_strip_directive = optional(string) # Default: "StripAll"
+        cache_enabled                         = optional(bool)
+        cache_query_parameter_strip_directive = optional(string)
         cache_query_parameters                = optional(list(string))
-        cache_use_dynamic_compression         = optional(bool) # Default: false
+        cache_use_dynamic_compression         = optional(bool)
         custom_forwarding_path                = optional(string)
-        forwarding_protocol                   = optional(string) # Default: "HttpsOnly"
+        forwarding_protocol                   = optional(string)
       }))
       frontend_endpoints = list(string)
       name               = string
@@ -132,49 +132,57 @@ EOT
       }))
     }))
     backend_pool_settings = optional(list(object({
-      backend_pools_send_receive_timeout_seconds   = optional(number) # Default: 60
+      backend_pools_send_receive_timeout_seconds   = optional(number)
       enforce_backend_pools_certificate_name_check = bool
     })))
   }))
   validation {
     condition = alltrue([
       for k, v in var.frontdoors : (
-        alltrue([for item in v.backend_pool : (length(item.backend) <= 500)])
+        length(v.backend_pool) >= 1
       )
     ])
-    error_message = "Each backend list must contain at most 500 items"
+    error_message = "Each backend_pool list must contain at least 1 items"
   }
   validation {
     condition = alltrue([
       for k, v in var.frontdoors : (
-        length(v.backend_pool_health_probe) <= 5000
+        alltrue([for item in v.backend_pool : (length(item.backend) >= 1 && length(item.backend) <= 500)])
       )
     ])
-    error_message = "Each backend_pool_health_probe list must contain at most 5000 items"
+    error_message = "Each backend list must contain between 1 and 500 items"
   }
   validation {
     condition = alltrue([
       for k, v in var.frontdoors : (
-        length(v.backend_pool_load_balancing) <= 5000
+        length(v.backend_pool_health_probe) >= 1 && length(v.backend_pool_health_probe) <= 5000
       )
     ])
-    error_message = "Each backend_pool_load_balancing list must contain at most 5000 items"
+    error_message = "Each backend_pool_health_probe list must contain between 1 and 5000 items"
   }
   validation {
     condition = alltrue([
       for k, v in var.frontdoors : (
-        length(v.frontend_endpoint) <= 500
+        length(v.backend_pool_load_balancing) >= 1 && length(v.backend_pool_load_balancing) <= 5000
       )
     ])
-    error_message = "Each frontend_endpoint list must contain at most 500 items"
+    error_message = "Each backend_pool_load_balancing list must contain between 1 and 5000 items"
   }
   validation {
     condition = alltrue([
       for k, v in var.frontdoors : (
-        length(v.routing_rule) <= 500
+        length(v.frontend_endpoint) >= 1 && length(v.frontend_endpoint) <= 500
       )
     ])
-    error_message = "Each routing_rule list must contain at most 500 items"
+    error_message = "Each frontend_endpoint list must contain between 1 and 500 items"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.frontdoors : (
+        length(v.routing_rule) >= 1 && length(v.routing_rule) <= 500
+      )
+    ])
+    error_message = "Each routing_rule list must contain between 1 and 500 items"
   }
 }
 
